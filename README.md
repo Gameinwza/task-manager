@@ -192,11 +192,4 @@ Tests:       15 passed, 15 total
 
 ---
 
-## Docker Hub
 
-Images พร้อมใช้งานที่
-
-- `godgameinwza/task-manager-backend:latest`
-- `godgameinwza/task-manager-frontend:latest`
-
----
