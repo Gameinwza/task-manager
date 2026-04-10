@@ -8,6 +8,7 @@ import {
   Param,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
@@ -22,8 +23,8 @@ export class TasksController {
   constructor(private tasksService: TasksService) {}
 
   @Get()
-  findAll(@Request() req: RequestWithUser) {
-    return this.tasksService.findAll(req.user.id);
+  findAll(@Request() req: RequestWithUser, @Query('search') search?: string) {
+    return this.tasksService.findAll(req.user.id, search);
   }
 
   @Post()
