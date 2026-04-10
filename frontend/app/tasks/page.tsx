@@ -13,10 +13,11 @@ export default function TasksPage() {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [title, setTitle] = useState('');
+  const [search, setSearch] = useState('');
 
-  const fetchTasks = useCallback(async () => {
+  const fetchTasks = useCallback(async (searchTerm?: string) => {
     try {
-      const res = await getTasks();
+      const res = await getTasks(searchTerm);
       setTasks(res.data as Task[]);
     } catch {
       router.push('/');
@@ -27,21 +28,26 @@ export default function TasksPage() {
     void fetchTasks();
   }, [fetchTasks]);
 
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    void fetchTasks(value);
+  };
+
   const handleCreate = async () => {
     if (!title.trim()) return;
     await createTask(title);
     setTitle('');
-    await fetchTasks();
+    await fetchTasks(search);
   };
 
   const handleToggle = async (id: number) => {
     await toggleTask(id);
-    await fetchTasks();
+    await fetchTasks(search);
   };
 
   const handleDelete = async (id: number) => {
     await deleteTask(id);
-    await fetchTasks();
+    await fetchTasks(search);
   };
 
   const handleLogout = () => {
@@ -54,7 +60,6 @@ export default function TasksPage() {
   return (
     <div className="min-h-screen bg-gray-950 p-6">
       <div className="max-w-lg mx-auto">
-
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">📋 Task Manager</h1>
@@ -69,6 +74,15 @@ export default function TasksPage() {
             ออกจากระบบ
           </button>
         </div>
+
+        {/* Search Box */}
+        <input
+          type="text"
+          placeholder="🔍 ค้นหา Task..."
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="w-full bg-gray-900 border border-gray-700 text-white placeholder-gray-500 rounded-xl px-4 py-3 mb-4 focus:outline-none focus:border-purple-500 transition"
+        />
 
         <div className="flex gap-2 mb-6">
           <input
@@ -121,8 +135,10 @@ export default function TasksPage() {
 
           {tasks.length === 0 && (
             <div className="text-center py-16">
-              <p className="text-4xl mb-3">🎯</p>
-              <p className="text-gray-500">ยังไม่มี Task ครับ เพิ่มได้เลย!</p>
+              <p className="text-4xl mb-3">🔍</p>
+              <p className="text-gray-500">
+                {search ? `ไม่พบ Task ที่ค้นหา "${search}"` : 'ยังไม่มี Task ครับ'}
+              </p>
             </div>
           )}
         </div>

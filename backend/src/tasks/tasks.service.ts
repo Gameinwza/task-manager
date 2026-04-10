@@ -10,8 +10,16 @@ export class TasksService {
     private tasksRepository: Repository<Task>,
   ) {}
 
-  async findAll(userId: number): Promise<Task[]> {
-    return this.tasksRepository.find({ where: { user: { id: userId } } });
+  async findAll(userId: number, search?: string): Promise<Task[]> {
+    const query = this.tasksRepository
+      .createQueryBuilder('task')
+      .where('task.userId = :userId', { userId });
+
+    if (search) {
+      query.andWhere('task.title ILIKE :search', { search: `%${search}%` });
+    }
+
+    return query.getMany();
   }
 
   async create(title: string, userId: number): Promise<Task> {
