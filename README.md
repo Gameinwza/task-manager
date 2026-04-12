@@ -21,6 +21,89 @@ Full Stack Task Management App พร้อม CI/CD Pipeline
 
 ---
 
+## System Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Browser (User)                    │
+└────────────────────────┬────────────────────────────┘
+                         │ HTTP
+                         ▼
+┌─────────────────────────────────────────────────────┐
+│             Docker Compose Network                  │
+│                                                     │
+│  ┌────────────┐    ┌────────────┐    ┌───────────┐  │
+│  │  Frontend  │───▶│  Backend   │───▶│ Database  │  │
+│  │  Next.js   │    │  NestJS    │    │PostgreSQL │  │
+│  │  :3000     │    │  :3001     │    │  :5432    │  │
+│  └────────────┘    └────────────┘    └─────┬─────┘  │
+│                                            │        │
+│                                       ┌────▼────┐   │
+│                                       │ Volume  │   │
+│                                       │ db_data │   │
+│                                       └─────────┘   │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## Development Workflow
+
+```
+1. สร้าง Feature Branch
+   git checkout -b feature/your-feature
+
+2. เขียนโค้ดและทดสอบใน Docker Dev
+   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+3. รัน Unit Test
+   cd backend && npm run test
+
+4. Push และเปิด Pull Request
+   git push origin feature/your-feature
+
+5. GitHub Actions รัน Test อัตโนมัติ
+   ถ้าผ่าน → Merge เข้า main ได้
+   ถ้าไม่ผ่าน → Merge ไม่ได้ (Production ปลอดภัย)
+
+6. Merge แล้ว CI/CD Build + Push Docker Hub อัตโนมัติ
+```
+
+---
+
+## CI/CD Pipeline
+
+```
+Push โค้ด / เปิด PR
+        │
+        ▼
+┌───────────────────┐
+│   Job: test       │  ← รันทุก Push และ PR
+│                   │
+│ 1. Setup Node 18  │
+│ 2. npm install    │
+│ 3. npm run test   │
+│    15/15 ✅       │
+└────────┬──────────┘
+         │ ผ่าน + main branch เท่านั้น
+         ▼
+┌───────────────────┐
+│ Job: build-push   │  ← รันเฉพาะ main
+│                   │
+│ 1. Login Docker   │
+│ 2. Build Backend  │
+│ 3. Build Frontend │
+│ 4. Push Docker Hub│
+└───────────────────┘
+```
+
+| Job | Trigger | Action |
+|-----|---------|--------|
+| `test` | ทุก Push / PR | รัน Unit Test 15 Tests |
+| `build-and-push` | Merge เข้า main เท่านั้น | Build + Push Docker Hub |
+
+---
+
 ## Project Structure
 
 ```
@@ -99,53 +182,6 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 
 ---
 
-## Development Workflow
-
-```
-1. สร้าง Feature Branch
-   git checkout -b feature/your-feature
-
-2. เขียนโค้ดและทดสอบใน Docker Dev
-   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
-
-3. รัน Unit Test
-   cd backend && npm run test
-
-4. Push และเปิด Pull Request
-   git push origin feature/your-feature
-
-5. GitHub Actions รัน Test อัตโนมัติ
-   ถ้าผ่าน → Merge เข้า main ได้
-
-6. Merge แล้ว CI/CD Build + Push Docker Hub อัตโนมัติ
-```
-
----
-
-## CI/CD Pipeline
-
-Pipeline มี 2 Jobs ครับ
-
-**Job 1: test** (รันทุก Push และ PR)
-- ติดตั้ง Dependencies
-- รัน Unit Test 15 Tests
-
-**Job 2: build-and-push** (รันเฉพาะ main branch)
-- Build Docker Image Backend + Frontend
-- Push ขึ้น Docker Hub
-
-```
-Push โค้ด
-    ↓
-รัน Unit Test อัตโนมัติ
-    ↓ ผ่าน
-Build Docker Image
-    ↓
-Push ขึ้น Docker Hub
-```
-
----
-
 ## API Endpoints
 
 ### Auth
@@ -192,4 +228,14 @@ Tests:       15 passed, 15 total
 
 ---
 
+## Docker Hub
 
+```bash
+docker pull godgameinwza/task-manager-backend:latest
+docker pull godgameinwza/task-manager-frontend:latest
+```
+
+---
+
+
+[Gameinwza](https://github.com/Gameinwza)
