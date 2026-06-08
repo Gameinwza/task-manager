@@ -9,7 +9,6 @@ interface Task {
   isDone: boolean;
 }
 
-
 export default function TasksPage() {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
